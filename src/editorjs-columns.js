@@ -61,7 +61,7 @@ class EditorJsColumns {
 
 		if (!Array.isArray(this.data.cols)) {
 			this.data.cols = [];
-			this.editors.numberOfColumns = 2;
+			this.editors.numberOfColumns = 1; // Change default to 1 column
 		} else {
 			this.editors.numberOfColumns = this.data.cols.length;
 		}
@@ -92,29 +92,179 @@ class EditorJsColumns {
 	renderSettings() {
 		return [
 			{
-				icon : "2",
-				label : "2 Columns",
-				onActivate : () => {this._updateCols(2)}
-			},
-			{
-				icon : "3",
-				label : "3 Columns",
-				onActivate : () => {this._updateCols(3)}
-			},
-			{
-				icon : "R",
-				label : "Roll Colls",
-				onActivate : () => {this._rollCols()}
-			},
-			]
+				icon: '<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M15 10.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1 0-1h9a.5.5 0 0 1 .5.5zm0 4a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1 0-1h9a.5.5 0 0 1 .5.5zm0-8a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1 0-1h9a.5.5 0 0 1 .5.5z"/></svg>',
+				label: 'Manage Columns',
+				onActivate: () => this._showColumnManager()
+			}
+		];
 	}
 
+	async _showColumnManager() {
+		const layoutOptions = [
+			{
+				value: '1',
+				label: '1 Column (100%)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			},
+			{
+				value: '1-1',
+				label: '2 Columns (50/50)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="7" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="13" y="4" width="7" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			},
+			{
+				value: '2-1',
+				label: '2 Columns (66/33)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="10" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="16" y="4" width="4" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			},
+			{
+				value: '1-2',
+				label: '2 Columns (33/66)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="4" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="10" y="4" width="10" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			},
+			{
+				value: '1-1-1',
+				label: '3 Columns (33/33/33)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="4" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="10" y="4" width="4" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="16" y="4" width="4" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			},
+			{
+				value: '3-6-3',
+				label: '3 Columns (25/50/25)',
+				icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="3" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="9" y="4" width="6" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <rect x="17" y="4" width="3" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>`
+			}
+		];
+		const inputOptions = {};
+		layoutOptions.forEach(layout => {
+			inputOptions[layout.value] = `<div class="layout-option">
+            <span class="layout-icon">${layout.icon}</span>
+            <span class="layout-label">${layout.label}</span>
+        </div>`;
+		});
 
-	_rollCols() {
-		// this shifts or "rolls" the columns
-		this.data.cols.unshift(this.data.cols.pop());
-		this.editors.cols.unshift(this.editors.cols.pop());
-		this._rerender();
+		const result = await Swal.fire({
+			title: 'Select Column Layout',
+			input: 'radio',
+			inputOptions: inputOptions,
+			inputValidator: (value) => {
+				if (!value) {
+					return 'You need to choose something!';
+				}
+			},
+			showCancelButton: true,
+			customClass: {
+				input: 'column-layout-radio',
+				container: 'column-layout-container',
+			},
+			html: `
+            <style>
+                .column-layout-container .swal2-radio {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 15px;
+                    padding: 20px;
+                }
+                .layout-option {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .layout-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 24px;
+                }
+                .layout-icon svg {
+                    width: 20px;
+                    height: 20px;
+                }
+                .layout-label {
+                    font-size: 14px;
+                }
+                .column-layout-radio {
+                    margin: 10px;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .column-layout-radio label:hover {
+                    background: #f5f5f5;
+                }
+            </style>
+        `
+		});
+
+		if (result.isConfirmed) {
+			await this._applyColumnLayout(result.value);
+		}
+	}
+
+	async _applyColumnLayout(layout) {
+		this.colWrapper.classList.remove(
+			'columns-layout-100',
+			'columns-layout-50-50',
+			'columns-layout-66-33',
+			'columns-layout-33-66',
+			'columns-layout-33-33-33',
+			'columns-layout-25-50-25'
+		);
+
+		// Add new layout class
+		this.colWrapper.classList.add(`columns-layout-${layout}`);
+
+		const layouts = {
+			'1': { cols: 1, widths: ['100%'] },
+			'1-1': { cols: 2, widths: ['50%', '50%'] },
+			'2-1': { cols: 2, widths: ['66.66%', '33.33%'] },
+			'1-2': { cols: 2, widths: ['33.33%', '66.66%'] },
+			'1-1-1': { cols: 3, widths: ['33.33%', '33.33%', '33.33%'] },
+			'3-6-3': { cols: 3, widths: ['25%', '50%', '25%'] }
+		};
+
+		const selectedLayout = layouts[layout];
+
+		if (!selectedLayout) return;
+
+		// Update number of columns
+		this.editors.numberOfColumns = selectedLayout.cols;
+
+		// Adjust existing columns or create new ones
+		while (this.data.cols.length > selectedLayout.cols) {
+			this.data.cols.pop();
+			this.editors.cols.pop();
+		}
+
+		while (this.data.cols.length < selectedLayout.cols) {
+			this.data.cols.push({ blocks: [] });
+		}
+
+		// Apply column widths
+		this.colWrapper.querySelectorAll('.ce-editorjsColumns_col').forEach((col, index) => {
+			col.style.width = selectedLayout.widths[index];
+		});
+
+		await this._rerender();
 	}
 
 	async _updateCols(num) {
@@ -142,7 +292,6 @@ class EditorJsColumns {
 		if (num == 3) {
 			this.editors.numberOfColumns = 3;
 			this._rerender();
-			// console.log(3);
 		}
 	}
 

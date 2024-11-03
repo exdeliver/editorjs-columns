@@ -1,82 +1,198 @@
-/* REQUIRED STYLES */
+/* Base Column Styles */
+.ce-editorjsColumns_wrapper {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-direction: row;
 
+    // Single column layout
+    &.columns-layout-100 {
+        .ce-editorjsColumns_col {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
 
-.ce-editorjsColumns_col{
-  flex: 50%;
+    .ce-toolbar__actions {
+        z-index: 0;
+    }
+
+    .ce-toolbar {
+        z-index: 4;
+    }
+
+    .ce-popover {
+        z-index: 4000;
+    }
 }
 
+.ce-editorjsColumns_col {
+    transition: width 0.3s ease-in-out;
+    min-width: 0; // Prevents flex items from overflowing
 
+    // Default width (for 50/50 layout)
+    flex: 1;
 
+    // Specific layout classes
+    &.col-50 {
+        width: 50%;
+    }
 
-.ce-editorjsColumns_wrapper{
-  display: flex;
-  width:100%;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-direction: row;
+    &.col-33 {
+        width: 33.33%;
+    }
 
-  .ce-toolbar__actions{
-    z-index:0;
-  }
+    &.col-66 {
+        width: 66.66%;
+    }
 
-  .ce-toolbar{
-    z-index: 4;
-  }
-
-  .ce-popover{
-    z-index: 4000;
-  }
-
-  
+    &.col-25 {
+        width: 25%;
+    }
 }
 
-@media (max-width: 800px) {
-  .ce-editorjsColumns_wrapper {
-    flex-direction: column;
-    padding:10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
+/* Layout Specific Classes */
+.columns-layout {
+    &-100 .ce-editorjsColumns_col {
+        width: 100%;
+    }
+
+    &-50-50 .ce-editorjsColumns_col {
+        width: 50%;
+    }
+
+    &-66-33 {
+        .ce-editorjsColumns_col:first-child {
+            width: 66.66%;
+        }
+
+        .ce-editorjsColumns_col:last-child {
+            width: 33.33%;
+        }
+    }
+
+    &-33-66 {
+        .ce-editorjsColumns_col:first-child {
+            width: 33.33%;
+        }
+
+        .ce-editorjsColumns_col:last-child {
+            width: 66.66%;
+        }
+    }
+
+    &-33-33-33 .ce-editorjsColumns_col {
+        width: 33.33%;
+    }
+
+    &-25-50-25 {
+        .ce-editorjsColumns_col {
+            &:first-child,
+            &:last-child {
+                width: 25%;
+            }
+
+            &:nth-child(2) {
+                width: 50%;
+            }
+        }
+    }
 }
 
+/* Sweet Alert Custom Styles */
+.column-layout-container {
+    .swal2-radio {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 20px;
 
+        label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
 
-/* 
+            .layout-icon {
+                font-size: 20px;
+                min-width: 24px;
+                text-align: center;
+            }
 
-These styles will also affect the parent editor!!!!!!
-
-*/
-
-.ce-inline-toolbar{
-  z-index:1000
+            &:first-child {
+                grid-column: 1 / -1; // Make single column option span full width
+            }
+        }
+    }
 }
 
-.ce-block__content, 
+/* Editor Specific Overrides */
+.ce-inline-toolbar {
+    z-index: 1000;
+}
+
+.ce-block__content,
 .ce-toolbar__content {
-  max-width: calc(100% - 50px);  /* example value, adjust for your own use case */
+    max-width: calc(100% - 50px);
 }
 
-/*   */
-.ce-toolbar__actions{
-  right: calc(100% + 30px); 
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 4px;
+.ce-toolbar__actions {
+    right: calc(100% + 30px);
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
 }
 
-/* Would be better to remove --narrow mode */
-/* Issue Raised */
-/* // This causes an error which is good i think? */
-.codex-editor--narrow .codex-editor__redactor{
-  margin: 0;
+.codex-editor--narrow .codex-editor__redactor {
+    margin: 0;
 }
 
-/* Required to prevent clipping */
-.ce-toolbar{
-  z-index: 4;
+.ce-toolbar {
+    z-index: 4;
 }
 
-.codex-editor{
-  /* background:#f00 !important; */
-  z-index: auto !important; 
+.codex-editor {
+    z-index: auto !important;
 }
 
+/* Responsive Behavior */
+@media (max-width: 800px) {
+    .ce-editorjsColumns_wrapper {
+        flex-direction: column;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+
+        .ce-editorjsColumns_col {
+            width: 100% !important;
+            margin-bottom: 15px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.column-layout-container .swal2-radio {
+    grid-template-columns: 1fr; // Stack layout options on mobile
+}
+
+/* Animation for column transitions */
+.ce-editorjsColumns_col {
+    transition: all 0.3s ease-in-out;
+
+    &.is-resizing {
+        transition: none; // Disable transition during manual resizing if implemented
+    }
+}
+
+/* Improved focus states for accessibility */
+.column-layout-radio:focus-within {
+    outline: 2px solid #2196f3;
+    outline-offset: 2px;
+}
