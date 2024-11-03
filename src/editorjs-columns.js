@@ -11,13 +11,14 @@
  * @description Tool's input and output data format
  */
 
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
 import Swal from "sweetalert2";
 
 import icon from "./editorjs-columns.svg";
-import style from "./editorjs-columns.scss";
 
 // import EditorJS from '@editorjs/editorjs'; // required for npm mode
+
+const MAX_SPAN = 12;
 
 class EditorJsColumns {
 
@@ -26,17 +27,11 @@ class EditorJsColumns {
 	}
 
 
-	constructor({ data, config, api, readOnly }) {
-		// console.log("API")
-		// console.log(api)
+	constructor({data, config, api, readOnly}) {
 		// start by setting up the required parts
 		this.api = api;
 		this.readOnly = readOnly;
-		this.config = config || {}
-
-		// console.log(this.config)
-
-		// console.log(this.config.EditorJsLibrary)
+		this.config = config || {};
 
 		this._CSS = {
 			block: this.api.styles.block,
@@ -46,8 +41,6 @@ class EditorJsColumns {
 		if (!this.readOnly) {
 			this.onKeyUp = this.onKeyUp.bind(this);
 		}
-		
-
 
 		this._data = {};
 
@@ -64,8 +57,11 @@ class EditorJsColumns {
 			this.editors.numberOfColumns = 2;
 		} else {
 			this.editors.numberOfColumns = this.data.cols.length;
-		}
 
+
+		}
+		var n = this.data.cols.length || 2;
+		this.editors.spanOfColumns = [...Array(n).keys()].map(x => MAX_SPAN / n);
 	}
 
 	static get isReadOnlySupported() {
@@ -88,25 +84,37 @@ class EditorJsColumns {
 		};
 	}
 
-
 	renderSettings() {
 		return [
 			{
-				icon : "2",
-				label : "2 Columns",
-				onActivate : () => {this._updateCols(2)}
+				icon: "2",
+				label: "2 Columns",
+				onActivate: () => {
+					this._updateCols(2)
+				}
 			},
 			{
-				icon : "3",
-				label : "3 Columns",
-				onActivate : () => {this._updateCols(3)}
+				icon: "3",
+				label: "3 Columns",
+				onActivate: () => {
+					this._updateCols(3)
+				}
 			},
 			{
-				icon : "R",
-				label : "Roll Colls",
-				onActivate : () => {this._rollCols()}
+				icon: "R",
+				label: "Roll Colls",
+				onActivate: () => {
+					this._rollCols()
+				}
 			},
-			]
+			{
+				name: "Widen Cols",
+				icon: `<div>W</div>`,
+				onActivate: () => {
+					this._widenCols()
+				}
+			}
+		]
 	}
 
 
@@ -146,9 +154,34 @@ class EditorJsColumns {
 		}
 	}
 
+
+	async _widenCols() {
+
+		if (this.editors.numberOfColumns == 2) {
+			var [s1, s2] = this.editors.spanOfColumns;
+			s1 += 1;
+			if (s1 > 11) s1 = 1;
+			s2 = MAX_SPAN - s1;
+			this.editors.spanOfColumns = [s1, s2];
+			this._rerender();
+
+		} else if (this.editors.numberOfColumns == 3) {
+			var [s1, s2, s3] = this.editors.spanOfColumns;
+			s1 += 1;
+			if (s1 > 10) s1 = 1;
+			s2 = parseInt((MAX_SPAN - s1) / 2);
+			s3 = MAX_SPAN - s1 - s2;
+
+			this.editors.spanOfColumns = [s1, s2, s3];
+
+			this._rerender();
+
+		}
+	}
+
 	async _rerender() {
 		await this.save();
-		// console.log(this.colWrapper);
+
 
 		for (let index = 0; index < this.editors.cols.length; index++) {
 			this.editors.cols[index].destroy();
@@ -157,16 +190,17 @@ class EditorJsColumns {
 
 		this.colWrapper.innerHTML = "";
 
-		// console.log("Building the columns");
 
 		for (let index = 0; index < this.editors.numberOfColumns; index++) {
-			// console.log("Start column, ", index);
+
 			let col = document.createElement("div");
 			col.classList.add("ce-editorjsColumns_col");
 			col.classList.add("editorjs_col_" + index);
+			col.classList.add(`ce-editorjsColumns_span-${this.editors.spanOfColumns[index]}`);
+
 
 			let editor_col_id = uuidv4();
-			// console.log("generating: ", editor_col_id);
+
 			col.id = editor_col_id;
 
 			this.colWrapper.appendChild(col);
@@ -192,10 +226,6 @@ class EditorJsColumns {
 		// // it runs MULTIPLE times. - this is not good, but works for now
 
 
-
-
-
-
 		// console.log("Generating Wrapper");
 
 		// console.log(this.api.blocks.getCurrentBlockIndex());
@@ -204,13 +234,11 @@ class EditorJsColumns {
 		this.colWrapper.classList.add("ce-editorjsColumns_wrapper");
 
 
-
 		// astops the double paste issue
 		this.colWrapper.addEventListener('paste', (event) => {
 			// event.preventDefault();
 			event.stopPropagation();
-		}, true);   
-
+		}, true);
 
 
 		this.colWrapper.addEventListener('keydown', (event) => {
@@ -230,7 +258,7 @@ class EditorJsColumns {
 				event.preventDefault();
 				event.stopImmediatePropagation();
 				event.stopPropagation();
-				
+
 				// console.log("ENTER Captured")
 				// this.api.blocks.insertNewBlock({type : "alert"});
 				// console.log("Added Block")
@@ -240,15 +268,12 @@ class EditorJsColumns {
 				event.preventDefault();
 				event.stopImmediatePropagation();
 				event.stopPropagation();
-				
+
 				// console.log("TAB Captured")
 			}
 		});
 
-
-
-
-
+		// console.log("Generating Wrapper");
 		for (let index = 0; index < this.editors.cols.length; index++) {
 			this.editors.cols[index].destroy();
 		}
@@ -264,6 +289,7 @@ class EditorJsColumns {
 			let col = document.createElement("div");
 			col.classList.add("ce-editorjsColumns_col");
 			col.classList.add("editorjs_col_" + index);
+			col.classList.add(`ce-editorjsColumns_span-${this.editors.spanOfColumns[index]}`);
 
 			let editor_col_id = uuidv4();
 			// console.log("generating: ", editor_col_id);
@@ -281,19 +307,22 @@ class EditorJsColumns {
 			});
 
 			this.editors.cols.push(editorjs_instance);
+			var n = this.data.cols.length || 2;
+			this.editors.spanOfColumns = [...Array(n).keys()].map(x => MAX_SPAN / n);
 			// console.log("End column, ", index);
 		}
 		return this.colWrapper;
 	}
 
 	async save() {
-		if(!this.readOnly){
+		if (!this.readOnly) {
 			// console.log("Saving");
 			for (let index = 0; index < this.editors.cols.length; index++) {
 				let colData = await this.editors.cols[index].save();
 				this.data.cols[index] = colData;
 			}
 		}
+		this.data.spans = this.editors.spanOfColumns
 		return this.data;
 	}
 
@@ -305,4 +334,4 @@ class EditorJsColumns {
 	}
 }
 
-export { EditorJsColumns as default };
+export {EditorJsColumns as default};
