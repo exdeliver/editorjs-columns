@@ -1,141 +1,142 @@
-/* Base Column Styles */
+/* Variables */
+:root {
+    --column-gap: 10px;
+    --column-min-width: 16.66%;
+    --column-transition: 0.3s ease;
+    --control-button-size: 24px;
+    --z-index-base: 1;
+    --z-index-toolbar: 4;
+    --z-index-popover: 4000;
+}
+
+/* Base Wrapper Styles */
 .ce-editorjsColumns_wrapper {
     display: flex;
     width: 100%;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: var(--column-gap);
+    margin-bottom: 20px;
     flex-direction: row;
+    position: relative;
+    padding-top: 35px; // Space for resize controls
 
-    // Single column layout
-    &.columns-layout-100 {
-        .ce-editorjsColumns_col {
-            width: 100%;
-            max-width: 100%;
+    // Z-index management
+    .ce-toolbar__actions { z-index: var(--z-index-base); }
+    .ce-toolbar { z-index: var(--z-index-toolbar); }
+    .ce-popover { z-index: var(--z-index-popover); }
+}
+
+/* Column Base Styles */
+.ce-editorjsColumns_col {
+    position: relative;
+    min-width: var(--column-min-width);
+    transition: width var(--column-transition);
+
+    // Column Content
+    .ce-block__content {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    // Resize Controls
+    .column-resize-controls {
+        position: absolute;
+        top: -35px;
+        right: calc(var(--column-gap) / 2);
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: calc(var(--z-index-toolbar) + 1);
+        background: white;
+        padding: 3px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+        // Control Buttons
+        .resize-button {
+            width: var(--control-button-size);
+            height: var(--control-button-size);
+            padding: 4px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #f5f5f5;
+                border-color: #2196f3;
+                transform: translateY(-1px);
+
+                svg {
+                    stroke: #2196f3;
+                }
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+
+            svg {
+                width: 14px;
+                height: 14px;
+                stroke: #707684;
+                transition: stroke 0.2s ease;
+            }
+
+            // Disabled state
+            &.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                &:hover {
+                    background: white;
+                    border-color: #e0e0e0;
+                    transform: none;
+                }
+            }
         }
     }
 
-    .ce-toolbar__actions {
-        z-index: 0;
-    }
-
-    .ce-toolbar {
-        z-index: 4;
-    }
-
-    .ce-popover {
-        z-index: 4000;
+    // Show controls on hover
+    &:hover .column-resize-controls {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-.ce-editorjsColumns_col {
-    transition: width 0.3s ease-in-out;
-    min-width: 0; // Prevents flex items from overflowing
-
-    // Default width (for 50/50 layout)
-    flex: 1;
-
-    // Specific layout classes
-    &.col-50 {
-        width: 50%;
-    }
-
-    &.col-33 {
-        width: 33.33%;
-    }
-
-    &.col-66 {
-        width: 66.66%;
-    }
-
-    &.col-25 {
-        width: 25%;
-    }
-}
-
-/* Layout Specific Classes */
+/* Layout Variations */
 .columns-layout {
-    &-100 .ce-editorjsColumns_col {
-        width: 100%;
-    }
+    &-100 .ce-editorjsColumns_col { width: 100%; }
 
-    &-50-50 .ce-editorjsColumns_col {
-        width: 50%;
-    }
+    &-50-50 .ce-editorjsColumns_col { width: 50%; }
 
     &-66-33 {
-        .ce-editorjsColumns_col:first-child {
-            width: 66.66%;
-        }
-
-        .ce-editorjsColumns_col:last-child {
-            width: 33.33%;
+        .ce-editorjsColumns_col {
+            &:first-child { width: 66.66%; }
+            &:last-child { width: 33.33%; }
         }
     }
 
     &-33-66 {
-        .ce-editorjsColumns_col:first-child {
-            width: 33.33%;
-        }
-
-        .ce-editorjsColumns_col:last-child {
-            width: 66.66%;
-        }
-    }
-
-    &-33-33-33 .ce-editorjsColumns_col {
-        width: 33.33%;
-    }
-
-    &-25-50-25 {
         .ce-editorjsColumns_col {
-            &:first-child,
-            &:last-child {
-                width: 25%;
-            }
-
-            &:nth-child(2) {
-                width: 50%;
-            }
+            &:first-child { width: 33.33%; }
+            &:last-child { width: 66.66%; }
         }
+    }
+
+    &-33-33-33 .ce-editorjsColumns_col { width: 33.33%; }
+
+    &-25-50-25 .ce-editorjsColumns_col {
+        &:first-child, &:last-child { width: 25%; }
+        &:nth-child(2) { width: 50%; }
     }
 }
 
-/* Sweet Alert Custom Styles */
-.column-layout-container {
-    .swal2-radio {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        padding: 20px;
-
-        label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            .layout-icon {
-                font-size: 20px;
-                min-width: 24px;
-                text-align: center;
-            }
-
-            &:first-child {
-                grid-column: 1 / -1; // Make single column option span full width
-            }
-        }
-    }
-}
-
-/* Editor Specific Overrides */
-.ce-inline-toolbar {
-    z-index: 1000;
-}
-
+/* Editor Overrides */
 .ce-block__content,
 .ce-toolbar__content {
     max-width: calc(100% - 50px);
@@ -143,29 +144,19 @@
 
 .ce-toolbar__actions {
     right: calc(100% + 30px);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.95);
     border-radius: 4px;
-}
-
-.codex-editor--narrow .codex-editor__redactor {
-    margin: 0;
-}
-
-.ce-toolbar {
-    z-index: 4;
-}
-
-.codex-editor {
-    z-index: auto !important;
+    backdrop-filter: blur(4px);
 }
 
 /* Responsive Behavior */
 @media (max-width: 800px) {
     .ce-editorjsColumns_wrapper {
         flex-direction: column;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding-top: 15px; // Reset padding for mobile
 
         .ce-editorjsColumns_col {
             width: 100% !important;
@@ -174,25 +165,527 @@
             &:last-child {
                 margin-bottom: 0;
             }
+
+            .column-resize-controls {
+                display: none;
+            }
         }
     }
 }
 
-.column-layout-container .swal2-radio {
-    grid-template-columns: 1fr; // Stack layout options on mobile
+/* Accessibility Improvements */
+.resize-button:focus-visible {
+    outline: 2px solid #2196f3;
+    outline-offset: 2px;
 }
 
-/* Animation for column transitions */
+/* Animation States */
 .ce-editorjsColumns_col {
-    transition: all 0.3s ease-in-out;
-
     &.is-resizing {
-        transition: none; // Disable transition during manual resizing if implemented
+        transition: none;
+        user-select: none;
+    }
+
+    &.resize-transition {
+        transition: width var(--column-transition);
     }
 }
 
-/* Improved focus states for accessibility */
-.column-layout-radio:focus-within {
-    outline: 2px solid #2196f3;
-    outline-offset: 2px;
+.resize-button {
+    background: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        background: #f0f0f0;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+
+        svg {
+            stroke: #2196f3;
+        }
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    svg {
+        stroke: #666;
+        transition: stroke 0.2s ease;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        &:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+}
+
+.column-resize-controls {
+    position: absolute;
+    top: -40px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.2s ease;
+    z-index: 5;
+
+    .size-indicator {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+        min-width: 40px;
+        text-align: center;
+
+        &.size-changed {
+            animation: pulse 0.3s ease;
+        }
+    }
+}
+
+.ce-editorjsColumns_col:hover .column-resize-controls {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.resize-limit-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    animation: slideIn 0.3s ease;
+    z-index: 9999;
+
+    &.fade-out {
+        animation: fadeOut 0.3s ease forwards;
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+.column-controls {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .column-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 6px 8px;
+        margin: 0 8px;
+
+        .column-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            min-width: 70px; // Increased to accommodate larger text
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &::before {
+                content: '';
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                background: #2196f3;
+                border-radius: 50%;
+                margin-right: 6px;
+            }
+        }
+
+        .ce-editorjsColumns_col {
+            &::after {
+                content: attr(data-column-size);
+                position: absolute;
+                bottom: 8px;
+                right: 8px;
+                font-size: 11px;
+                color: #666;
+                padding: 2px 6px;
+                background: #f5f5f5;
+                border-radius: 3px;
+                pointer-events: none;
+            }
+        }
+
+        /* Grid visualization */
+        .ce-editorjsColumns_wrapper {
+            &::before {
+                content: '12 Column Grid';
+                position: absolute;
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 11px;
+                color: #666;
+                background: #f5f5f5;
+                padding: 2px 8px;
+                border-radius: 3px;
+            }
+        }
+
+        .width-controls {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .column-button {
+            width: 24px;
+            height: 24px;
+            padding: 4px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #f0f0f0;
+                svg {
+                    stroke: #2196f3;
+                }
+            }
+
+            svg {
+                width: 16px;
+                height: 16px;
+                stroke: #666;
+                transition: stroke 0.2s ease;
+            }
+        }
+
+        .column-drag-handle {
+            cursor: move;
+            padding: 4px;
+            border-radius: 4px;
+
+            &:hover {
+                background: #f0f0f0;
+                svg {
+                    stroke: #2196f3;
+                }
+            }
+
+            svg {
+                width: 16px;
+                height: 16px;
+                stroke: #666;
+                transition: stroke 0.2s ease;
+            }
+        }
+    }
+}
+
+.ce-editorjsColumns_col {
+    &:hover .column-controls {
+        opacity: 1;
+    }
+
+    &.dragging {
+        opacity: 0.5;
+        .column-controls {
+            opacity: 0;
+        }
+    }
+}
+
+// Add these styles for better mobile responsiveness
+@media (max-width: 800px) {
+    .column-controls {
+        position: relative;
+        top: 0;
+        margin-bottom: 10px;
+        opacity: 1;
+
+        .column-toolbar {
+            margin: 0;
+            background: #f5f5f5;
+        }
+    }
+}
+
+/* Add these new styles to your existing CSS */
+
+/* Grid Area Indicators */
+.ce-editorjsColumns_wrapper {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px 15px 15px;
+    margin: 20px 0;
+
+    &::before {
+        content: 'Row';
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #e9ecef;
+        color: #495057;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 4px 0 4px 0;
+        font-weight: 500;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 8px;
+        right: 8px;
+        height: 1px;
+        background: #dee2e6;
+    }
+}
+
+.ce-editorjsColumns_col {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 35px 15px 15px;
+    margin: 5px;
+    min-height: 100px;
+
+    &::before {
+        content: attr(data-column-label);
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: #e9ecef;
+        color: #495057;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        z-index: 1;
+    }
+
+    &:hover {
+        border-color: #2196f3;
+        box-shadow: 0 0 0 1px #2196f3;
+    }
+
+    &.dragging {
+        background: #f8f9fa;
+        border-style: dashed;
+    }
+}
+
+/* Column Controls Enhancement */
+.column-controls {
+    .column-toolbar {
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+
+        .column-label {
+            background: #e9ecef;
+            color: #495057;
+        }
+    }
+}
+
+/* Layout Indicators */
+.columns-layout {
+    &-100::before { content: 'Full Width Row'; }
+    &-50-50::before { content: 'Two Equal Columns'; }
+    &-66-33::before { content: 'Wide Left Column'; }
+    &-33-66::before { content: 'Wide Right Column'; }
+    &-33-33-33::before { content: 'Three Equal Columns'; }
+    &-25-50-25::before { content: 'Wide Center Column'; }
+}
+
+/* Dropzone Indicators */
+.ce-editorjsColumns_wrapper.dragging-over {
+    background: #e3f2fd;
+    border-color: #2196f3;
+
+    &::before {
+        background: #2196f3;
+        color: #ffffff;
+    }
+}
+
+.ce-editorjsColumns_col.dragging-over {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    border-style: dashed;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 800px) {
+    .ce-editorjsColumns_wrapper {
+        padding-top: 50px;
+
+        &::before {
+            content: 'Mobile Row';
+        }
+    }
+
+    .ce-editorjsColumns_col {
+        margin: 10px 5px;
+
+        &::before {
+            content: attr(data-column-label) ' (Full Width)';
+        }
+    }
+}
+
+/* Add these helper classes */
+.grid-area-indicator {
+    position: absolute;
+    font-size: 12px;
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.column-dimensions {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 11px;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.column-settings-modal {
+    .column-settings {
+        padding: 20px;
+
+        .setting-group {
+            margin-bottom: 20px;
+
+            label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: #333;
+            }
+
+            .width-input {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                input {
+                    width: 80px;
+                    padding: 6px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #2196f3;
+                    }
+                }
+
+                .unit {
+                    color: #666;
+                }
+            }
+
+            .padding-inputs {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+
+                input {
+                    width: 100%;
+                    padding: 6px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    text-align: center;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #2196f3;
+                    }
+                }
+            }
+
+            input[type="color"] {
+                width: 100%;
+                height: 40px;
+                padding: 2px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+
+                &::-webkit-color-swatch-wrapper {
+                    padding: 0;
+                }
+
+                &::-webkit-color-swatch {
+                    border: none;
+                    border-radius: 2px;
+                }
+            }
+        }
+    }
+}
+
+.column-button.settings {
+    margin-left: 8px;
+
+    &:hover svg {
+        stroke: #2196f3;
+    }
 }
