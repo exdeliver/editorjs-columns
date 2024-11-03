@@ -64,25 +64,11 @@
 <!-- <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-
-
-<!-- Load Local Tools -->
 <script src="../dist/editorjs-columns.bundle.js"></script>
-
-
-<!-- Load 3rd Party Tools -->
 <script src="https://cdn.jsdelivr.net/npm/editorjs-alert@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-codeflask@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-nested-checklist@latest"></script>
-
-<!-- <script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-paragraph-linebreakable"></script> -->
-
-
-<!-- Load Editor.js's Core -->
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-
-
-<!-- Initialization -->
 <script>
 
 // next define the tools in the main block
@@ -112,7 +98,7 @@ editor = new EditorJS({
 	readOnly: false,
 	holder: 'editorjs',
 	tools: tools,
-	data: example_data, // Imported from example_data.js
+	// data: example_data, // Imported from example_data.js
 
 
 	onReady: function () {

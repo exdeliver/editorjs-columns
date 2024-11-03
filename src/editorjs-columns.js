@@ -208,6 +208,7 @@ class EditorJsColumns {
 
 	async _applyColumnLayout(layout) {
 		const selectedLayout = EditorJsColumns.layouts[layout];
+
 		if (!selectedLayout) return;
 
 		// Remove old layout classes
@@ -248,6 +249,15 @@ class EditorJsColumns {
 		});
 
 		this.data.layout = layout;
+
+		// Remove placeholder if it exists
+		const placeholder = this.colWrapper.querySelector('.column-placeholder');
+		if (placeholder) {
+			placeholder.remove();
+		}
+
+		// Rerender the columns
+		await this._rerender();
 	}
 
 	_addColumnResizeObserver(col, index) {
@@ -350,10 +360,40 @@ class EditorJsColumns {
 			}
 		});
 
-		// Initial render
-		this._rerender().then((result) => {
-			console.info('Loaded EXdeliver Pagebuilder Row with columns');
-		});
+		// Add click listener to show column manager
+		if (!this.readOnly) {
+			this.colWrapper.addEventListener('click', (event) => {
+				if (event.target === this.colWrapper && !this.data.layout) {
+					this._showColumnManager();
+				}
+			});
+
+			// Add placeholder text if no layout
+			if (!this.data.layout) {
+				const placeholder = document.createElement('div');
+				placeholder.classList.add('column-placeholder');
+				placeholder.innerHTML = `
+                <div class="placeholder-content">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>Click to add columns</p>
+                </div>
+            `;
+				this.colWrapper.appendChild(placeholder);
+
+				// Show column manager immediately if no layout
+				setTimeout(() => {
+					if (!this.data.layout) {
+						this._showColumnManager();
+					}
+				}, 100);
+			} else {
+				// If layout exists, render the columns
+				this._rerender();
+			}
+		}
 
 		return this.colWrapper;
 	}
