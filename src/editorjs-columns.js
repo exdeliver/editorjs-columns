@@ -62,10 +62,7 @@ class EditorJsColumns {
 		return true;
 	}
 
-
 	onKeyUp(e) {
-		// console.log(e)
-		// console.log("heyup")
 		if (e.code !== "Backspace" && e.code !== "Delete") {
 			return;
 		}
@@ -251,97 +248,18 @@ class EditorJsColumns {
 		});
 
 		this.data.layout = layout;
-		await this._rerender();
-	}
-
-	async _updateCols(num) {
-		if (num === this.editors.numberOfColumns) return;
-
-		if (num < this.editors.numberOfColumns) {
-			// Removing columns
-			const columnsToRemove = this.editors.numberOfColumns - num;
-
-			let resp = await Swal.fire({
-				title: "Are you sure?",
-				text: `This will delete ${columnsToRemove} column${columnsToRemove > 1 ? 's' : ''}!`,
-				icon: "warning",
-				showCancelButton: true,
-				confirmButtonColor: "#3085d6",
-				cancelButtonColor: "#d33",
-				confirmButtonText: "Yes, delete it!",
-			});
-
-			if (resp.isConfirmed) {
-				// Remove columns
-				while (this.data.cols.length > num) {
-					this.data.cols.pop();
-					this.editors.cols.pop();
-				}
-				this.editors.numberOfColumns = num;
-
-				// Redistribute widths
-				const newWidth = 100 / num;
-				const newGridSize = 12 / num;
-
-				this.data.cols.forEach((col, index) => {
-					col.width = `${newWidth}%`;
-					col.gridSize = newGridSize;
-				});
-
-				await this._rerender();
-			}
-		} else {
-			// Adding columns
-			const columnsToAdd = num - this.editors.numberOfColumns;
-			const newWidth = 100 / num;
-			const newGridSize = 12 / num;
-
-			// Update existing columns
-			this.data.cols.forEach(col => {
-				col.width = `${newWidth}%`;
-				col.gridSize = newGridSize;
-			});
-
-			// Add new columns
-			for (let i = 0; i < columnsToAdd; i++) {
-				this.data.cols.push({
-					blocks: [],
-					width: `${newWidth}%`,
-					gridSize: newGridSize
-				});
-			}
-
-			this.editors.numberOfColumns = num;
-			await this._rerender();
-		}
 	}
 
 	_addColumnResizeObserver(col, index) {
 		const resizeObserver = new ResizeObserver(entries => {
 			for (let entry of entries) {
 				if (!this.data.cols[index]) return;
-
-				const width = entry.contentRect.width;
-				const totalWidth = this.colWrapper.offsetWidth;
-				const percentage = (width / totalWidth) * 100;
-				const gridSize = Math.round((percentage / 100) * 12);
-
-				// Update data
-				this.data.cols[index].gridSize = gridSize;
-				this.data.cols[index].width = `${percentage}%`;
-
-				// Update UI
-				const label = col.querySelector('.column-label');
-				if (label) {
-					label.textContent = `Col ${gridSize}/12`;
-				}
 			}
 		});
 
 		resizeObserver.observe(col);
 		return resizeObserver; // Return for cleanup if needed
 	}
-
 
 	async _rerender() {
 		// If save is needed (not initial render)
@@ -370,7 +288,6 @@ class EditorJsColumns {
 			const gridSize = this.data.cols[index]?.gridSize ||
 				(EditorJsColumns.layouts[this.data.layout]?.gridSizes[index] ||
 					Math.floor(12 / this.editors.numberOfColumns));
-
 			// Apply width and grid size
 			col.style.width = width;
 			col.setAttribute('data-grid-size', gridSize);
@@ -434,7 +351,9 @@ class EditorJsColumns {
 		});
 
 		// Initial render
-		this._rerender();
+		this._rerender().then((result) => {
+			console.info('Loaded EXdeliver Pagebuilder Row with columns');
+		});
 
 		return this.colWrapper;
 	}
@@ -482,6 +401,8 @@ class EditorJsColumns {
 		columns.forEach((col, i) => {
 			const percentage = (currentGridSizes[i] / 12) * 100;
 			col.style.width = `${percentage}%`;
+			col.setAttribute('data-grid-size', currentGridSizes[i]);
+			col.setAttribute('data-column-label', `Col ${currentGridSizes[i]}/12`);
 			this.data.cols[i].gridSize = currentGridSizes[i];
 			this.data.cols[i].width = `${percentage}%`;
 
@@ -720,30 +641,12 @@ class EditorJsColumns {
 		const tempEditor = this.editors.cols[fromIndex];
 		this.editors.cols[fromIndex] = this.editors.cols[toIndex];
 		this.editors.cols[toIndex] = tempEditor;
-
-		// Update column labels
-		this._updateColumnLabels();
-	}
-
-	_updateColumnLabels() {
-		const columns = this.colWrapper.querySelectorAll('.ce-editorjsColumns_col');
-		columns.forEach((col, index) => {
-			const label = col.querySelector('.column-label');
-			if (label) {
-				label.textContent = `Col ${index + 1}`;
-			}
-		});
 	}
 
 	calculateColumnSize(width) {
 		// Convert percentage to columns out of 12
 		const percentage = parseFloat(width);
-		const columns = Math.round((percentage / 100) * 12);
-		return columns;
-	}
-
-	getColumnLabel(columns) {
-		return `Col ${columns}/12`;
+		return Math.round((percentage / 100) * 12);
 	}
 
 	async save() {

@@ -2,6 +2,7 @@
  * Column Block for the Editor.js.
  *
  * @author Calum Knott (calum@calumk.com)
+ * @author Jason Hoendervanger - EXdeliver
  * @copyright Calum Knott
  * @license The MIT License (MIT)
  */
